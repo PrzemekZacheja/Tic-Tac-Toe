@@ -1,21 +1,46 @@
 package tictactoe;
 
+import java.util.Arrays;
 import java.util.Scanner;
 
 public class Main {
+
+    private static int wiersz;
+    private static int kolumna;
+    static Scanner scanner = new Scanner(System.in);
+
     public static void main(String[] args) {
         char[][] plansza = new char[3][3];
         char symbolGame = 'X';
-        for (int i = 0; i < plansza.length; i++) {
-            for (int j = 0; j < plansza[i].length; j++) {
-                plansza[i][j] = '_';
-            }
+        for (char[] chars : plansza) {
+            Arrays.fill(chars, ' ');
         }
-        printTable(plansza);
-        while (true) {
+
+        boolean continueGame = true;
+        int countMoves = 0;
+        while (continueGame || countMoves <= 9) {
             printTable(plansza);
             boolean correctMove = move(plansza, symbolGame);
             if (correctMove) {
+                countMoves++;
+
+                boolean winRow = checkRows(plansza, symbolGame);
+                boolean winColumn = checkColumns(plansza, symbolGame);
+                boolean winCross1 = checkCross1(plansza, symbolGame);
+                boolean winCross2 = checkCross2(plansza, symbolGame);
+                if (winRow || winColumn || winCross1 || winCross2) {
+                    printTable(plansza);
+                    System.out.println(symbolGame + " wins");
+                    continueGame = false;
+                    break;
+                }
+                if (countMoves == 9) {
+                    printTable(plansza);
+                    System.out.println("Draw");
+                    continueGame = false;
+                    break;
+                }
+
                 symbolGame = symbolGame == 'X' ? 'O' : 'X';
             }
 //            if (symbolGame == 'X'){
@@ -23,8 +48,60 @@ public class Main {
 //            }else{
 //                symbolGame = 'X';
 //            }
+
         }
 
+    }
+
+
+    private static boolean checkCross2(char[][] plansza, char symbolGame) {
+        for (int wiersz = 0; wiersz < plansza.length; wiersz++) {
+            if (plansza[wiersz][plansza.length - 1 - wiersz] != symbolGame) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean checkCross1(char[][] plansza, char symbolGame) {
+        for (int wiersz = 0; wiersz < plansza.length; wiersz++) {
+            if (plansza[wiersz][wiersz] != symbolGame) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean checkColumns(char[][] plansza, char symbolGame) {
+        for (int kolumna = 0; kolumna < plansza.length; kolumna++) {
+            boolean win = true;
+            for (int wiersz = 0; wiersz < plansza.length; wiersz++) {
+                if (plansza[wiersz][kolumna] != symbolGame) {
+                    win = false;
+                    break;
+                }
+            }
+            if (win) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean checkRows(char[][] plansza, char symbolGame) {
+        for (int wiersz = 0; wiersz < plansza.length; wiersz++) {
+            boolean win = true;
+            for (int kolumna = 0; kolumna < plansza.length; kolumna++) {
+                if (plansza[wiersz][kolumna] != symbolGame) {
+                    win = false;
+                    break;
+                }
+            }
+            if (win) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void printTable(char[][] plansza) {
@@ -43,22 +120,31 @@ public class Main {
 
     public static boolean move(char[][] plansza, char symbolGame) {
         System.out.print("Enter the coordinates: ");
-        Scanner scanner = new Scanner(System.in);
-        int wiersz = scanner.nextInt();
-        int kolumna = scanner.nextInt();
-        if (wiersz == 3) {
+
+        int nieregularnaKolumna = scanner.nextInt();
+        int nieregularnyWiersz = scanner.nextInt();
+
+
+        if (nieregularnyWiersz < 0 || nieregularnyWiersz > 3 || nieregularnaKolumna < 0 || nieregularnaKolumna > 3) {
+            System.out.println("Coordinates should be from 1 to 3!");
+            return false;
+        }
+        kolumna = nieregularnaKolumna - 1;
+
+        if (nieregularnyWiersz == 3) {
             wiersz = 0;
-        } else if (wiersz == 2) {
+        } else if (nieregularnyWiersz == 2) {
             wiersz = 1;
-        } else if (wiersz == 1) {
+        } else if (nieregularnyWiersz == 1) {
             wiersz = 2;
         }
-        kolumna = kolumna - 1;
-        boolean isOccupied = plansza[wiersz][kolumna] == '_';
+
+        boolean isOccupied = plansza[wiersz][kolumna] == ' ';
         if (!isOccupied) {
             System.out.println("This cell is occupied! Choose another one!");
             return false;
         }
+
         plansza[wiersz][kolumna] = symbolGame;
         return true;
     }
